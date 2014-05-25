@@ -1,23 +1,39 @@
 #!/bin/bash
 
+if ! $(which fpm &>/dev/null) 
+then
+	echo ""
+	echo "ERROR: Missing fpm"
+	echo "       You seem to be missing the fpm utility, which is required to build packages"
+	echo "       Get it here, then try again: https://www.github.com/jordansissel/fpm/"
+	echo ""
+	exit 2
+fi
+
+function script_dir() {
+	# Prints the name of the directory where this script lives.
+	# Uses a symlink-aware technique for finding script directory, originally from:
+	#   http://stackoverflow.com/questions/59895/
+	SOURCE="${BASH_SOURCE[0]}"
+	while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+	  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+	  SOURCE="$(readlink "$SOURCE")"
+	  # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+	  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" 	
+	done
+	cd -P "$( dirname "$SOURCE" )" && pwd
+}
+BASE_DIR=$(script_dir)
+
 DATESTAMP=$(date +%Y%m%d%H%M)
 function defaults() {
-	BASE_VERSION=1.0
-	VERSION="${BASE_VERSION}-$DATESTAMP"
+	USE_DATESTAMP=true
+	VERSION=1.0
 	ARCH="all"
+	OUTPUT_DIR="$BASE_DIR/Packages"
+	[ -e $BASE_DIR/build_overrides ] && . $BASE_DIR/build_overrides 	
 }
 
-# Define base working dir as parent of wherever this script lives.
-# Uses a symlink-aware technique for finding script directory, originally from:
-#   http://stackoverflow.com/questions/59895/
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-done
-BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-OUTPUT_DIR="$BASE_DIR/Packages"
 
 if [ $# -eq 0 ]
 then
@@ -28,26 +44,32 @@ fi
 BUILT=""
 for d in $@
 do
-	NAME=$(basename $d)
+	# For now the build script can only handle package dirs with an
+	# fs/ subdir with files for the package
+	[ -d $d/fs ] || continue
+
+	# Set package-specific options
 	unset PKGNAME
 	defaults ; [ -e $d/build_overrides ] && . $d/build_overrides
-	[ -z "$PKGNAME" ] && PKGNAME="${NAME}_${VERSION}_${ARCH}.deb"
+	[ -z "$NAME" ] && NAME=$(basename $d)
 
 	# Nothing to do if there's already a .deb and the 
 	# directory hasn't been changed since it was created
-	LATEST=$(ls -t $OUTPUT_DIR/${NAME}_*.deb 2>/dev/null | head -n1)
-	# Apparently test isn't smart enough to not try the second half of a -a
-	# pair if the first one fails. Hence the uglier looking &&'ded pair of test
-	if $([ -n "$LATEST" ] && [ $(find $d/scripts $d/fs -newer $LATEST 2>/dev/null | wc -l) -eq 0 ])
+	EXISTING=$( find $OUTPUT_DIR  -regex '.*/'${NAME}'_'${VERSION}'\(-[0-9]+\)?_[^/]*.deb$' )
+	if [ -n "$EXISTING" ]
 	then
-		continue
+		LATEST=$(ls -lt $EXISTING | head -n1)
+		[ $(find $d/scripts $d/fs -newer $LATEST 2>/dev/null | wc -l) -eq 0 ] && continue
+
 	fi
+
+	# If USE_DATESTAMP is enabled, embed datestamp into version
+	# This lets you upgrade without forcing during development
+	[ $USE_DATESTAMP ] && VERSION=${VERSION}-${DATESTAMP}
+	[ -z "$PKGNAME" ] && PKGNAME="${NAME}_${VERSION}_${ARCH}.deb"
 	
 	# Everything from here on occurs in the package directory
 	pushd $d &> /dev/null
-
-	# For now we also can't continue unless there's an fs/ dir with files for the package
-	[ -d fs ] || continue
 
 	# Include {pre,post}{install,uninstall} scripts if they exist
 	SCRIPTS=""
