@@ -1,2 +1,0 @@
-== RUNNING fpm -s dir -t deb -C fs -a all -n tunapanda-artwork -v 1.0-201405252020  --after-install scripts/post-install.sh -p /usr/local/Tunapanda_Data/Packages/Packages/tunapanda-artwork_1.0-201405252020_all.deb usr
-{:message=>"Created package", :timestamp=>"2014-05-25T20:20:08.   %6N+0300", :path=>"/usr/local/Tunapanda_Data/Packages/Packages/tunapanda-artwork_1.0-201405252020_all.deb"}
