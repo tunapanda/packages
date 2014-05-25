@@ -1,13 +1,13 @@
-=Description
+# Description
 This repository houses the sources and build system for custom packages used in Tunapanda Edubuntu.
 
-==Warning!
+## Warning!
 These packages and the build system are still very primitive. Don't expect much yet!
 
-=Dependencies 
+# Dependencies 
 * The build script uses Jordan Dissel's awesome ["effing package management" (FPM) tool](https://www.github.com/jordandissel/fpm/)
 
-=How packages are built:
+# How packages are built:
 Each package has its own directory
 * Package dirs *must* have:
  * an fs/ subdir, which contains all files provided by the package, as if fs/ was the / directory on the target system
