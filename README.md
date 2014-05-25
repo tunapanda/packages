@@ -13,13 +13,15 @@ These packages and the build system are still very primitive. Don't expect much 
 Each package has its own directory
 * Package dirs *must* have:
  * an fs/ subdir, which contains all files provided by the package, as if fs/ was the / directory on the target system
-* Package dirs *may* have...
- * A scripts/ subdir, containing any combination of pre-install.sh, post-install.sh, pre-remove.sh, post-remove.sh
- * A build_overrides file, which can override any of the following:
+ * A build_overrides file, which *must* define:
+  * DESCRIPTION (short description of the package)
+ * ...and *may* define:
   * NAME 	(defaults to directory name)
   * VERSION 	(defaults to 1.0)
   * ARCH 	(defaults to 'all')
   * OUTPUT_DIR	(defaults to a Packages/ subdir of wherever build.sh lives)
+* Package dirs *may* have...
+ * A scripts/ subdir, containing any combination of pre-install.sh, post-install.sh, pre-remove.sh, post-remove.sh
 
 
 Once the package direcory(ies) have everything you want, you can build them with:

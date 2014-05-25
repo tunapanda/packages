@@ -30,8 +30,9 @@ function defaults() {
 	USE_DATESTAMP=true
 	VERSION=1.0
 	ARCH="all"
+	URL="https://github.com/tunapanda"
 	OUTPUT_DIR="$BASE_DIR/Packages"
-	[ -e $BASE_DIR/build_overrides ] && . $BASE_DIR/build_overrides 	
+	[ -e $BASE_DIR/build_settings ] && . $BASE_DIR/build_settings 	
 }
 
 
@@ -44,14 +45,23 @@ fi
 BUILT=""
 for d in $@
 do
-	# For now the build script can only handle package dirs with an
-	# fs/ subdir with files for the package
-	[ -d $d/fs ] || continue
+	# If a dir doesn't have build_settings, it's not a package dir
+	[ -f $d/build_settings ] || continue
 
 	# Set package-specific options
 	unset PKGNAME
-	defaults ; [ -e $d/build_overrides ] && . $d/build_overrides
+	defaults ; . $d/build_settings
 	[ -z "$NAME" ] && NAME=$(basename $d)
+
+	# Must have a description in build_settings
+	# Everything else has a default to fall back on
+	if [ -z "DESCRIPTION" ]
+	then
+		echo ""
+		echo "ERROR: Required setting missing. Set DESCRIPTION in $d/build_settings"
+		echo ""
+		exit 3
+	fi
 
 	# Nothing to do if there's already a .deb and the 
 	# directory hasn't been changed since it was created
@@ -82,9 +92,12 @@ do
 	fi
 
 	( 
-		CMD="fpm -s dir -t deb -C fs -a $ARCH -n $NAME -v $VERSION $SCRIPTS -p $OUTPUT_DIR/$PKGNAME $(cd fs; ls)" 
-		echo "== RUNNING $CMD"
-		$CMD
+		# TODO: Would love to do this in a less ugly way by storing the command and args in a variable
+		# and then using it for the echo and the execution, but I can't figure out how to make bash 
+		# quote $DESCRIPTION properly when stored in a var
+		echo "== RUNNING: fpm -s dir -t deb -C fs -a $ARCH --url $URL -n $NAME --description \"$DESCRIPTION\" -v $VERSION $SCRIPTS -p $OUTPUT_DIR/$PKGNAME $(cd fs; ls)" 
+		fpm -s dir -t deb -C fs -a $ARCH --url $URL -n $NAME --description "$DESCRIPTION" -v $VERSION $SCRIPTS -p $OUTPUT_DIR/$PKGNAME $(cd fs; ls) 
+
 	) &> build.out
 	
 	echo "$OUTPUT_DIR/$PKGNAME"
