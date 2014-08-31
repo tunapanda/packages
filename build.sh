@@ -49,7 +49,7 @@ do
 	[ -f $d/build_settings ] || continue
 
 	# Set package-specific options
-	unset PKGNAME
+	unset NAME PKGNAME 
 	defaults ; . $d/build_settings
 	[ -z "$NAME" ] && NAME=$(basename $d)
 
@@ -62,6 +62,13 @@ do
 		echo ""
 		exit 3
 	fi
+
+
+	DEPS=""
+	for dep in $DEPENDENCIES
+	do
+		DEPS="$DEPS -d $dep"	
+	done
 
 	# Nothing to do if there's already a .deb and the 
 	# directory hasn't been changed since it was created
@@ -95,8 +102,25 @@ do
 		# TODO: Would love to do this in a less ugly way by storing the command and args in a variable
 		# and then using it for the echo and the execution, but I can't figure out how to make bash 
 		# quote $DESCRIPTION properly when stored in a var
-		echo "== RUNNING: fpm -s dir -t deb -C fs -a $ARCH --url $URL -n $NAME --description \"$DESCRIPTION\" -v $VERSION $SCRIPTS -p $OUTPUT_DIR/$PKGNAME $(cd fs; ls)" 
-		fpm -s dir -t deb -C fs -a $ARCH --url $URL -n $NAME --description "$DESCRIPTION" -v $VERSION $SCRIPTS -p $OUTPUT_DIR/$PKGNAME $(cd fs; ls) 
+		echo ==RUNNING: \
+			fpm -s dir -t deb -C fs -a $ARCH \
+			--url $URL \
+			-n $NAME \
+			--description "$DESCRIPTION" \
+			-v $VERSION \
+			$SCRIPTS \
+			$DEPS \
+			-p $OUTPUT_DIR/$PKGNAME \
+			$(cd fs; ls) 
+		fpm -s dir -t deb -C fs -a $ARCH \
+			--url $URL \
+			-n $NAME \
+			--description "$DESCRIPTION" \
+			-v $VERSION \
+			$SCRIPTS \
+			$DEPS \
+			-p $OUTPUT_DIR/$PKGNAME \
+			$(cd fs; ls) 
 
 	) &> build.out
 	
