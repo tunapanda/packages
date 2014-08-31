@@ -1,0 +1,2 @@
+DESCRIPTION="Local instance of Wikipedia For Schools (without data)"
+DEPENDENCIES="apache2.2-common apache2.2-bin"
