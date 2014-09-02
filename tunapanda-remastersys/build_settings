@@ -1,2 +1,2 @@
-DESCRIPTION='Customized and repackaged remastersys (of blessed memory)'
-DEPENDENCIES='initramfs-tools squashfs-tools'
+DESCRIPTION='Customized and repackaged remastersys'
+DEPENDENCIES='initramfs-tools squashfs-tools casper'
