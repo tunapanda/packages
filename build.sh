@@ -77,7 +77,7 @@ do
 	if [ -n "$EXISTING" ]
 	then
 		LATEST=$(ls -t $EXISTING | head -n1)
-		[ $(find $d/scripts $d/fs -newer $LATEST 2>/dev/null | wc -l) -eq 0 ] && continue
+		[ $(find $d/build_settings $d/scripts $d/fs -newer $LATEST 2>/dev/null | wc -l) -eq 0 ] && continue
 
 	fi
 
