@@ -75,7 +75,7 @@ do
 	EXISTING=$( find $OUTPUT_DIR  -regex '.*/'${NAME}'_'${VERSION}'\(-[0-9]+\)?_[^/]*.deb$' )
 	if [ -n "$EXISTING" ]
 	then
-		LATEST=$(ls -lt $EXISTING | head -n1)
+		LATEST=$(ls -t $EXISTING | head -n1)
 		[ $(find $d/scripts $d/fs -newer $LATEST 2>/dev/null | wc -l) -eq 0 ] && continue
 
 	fi
