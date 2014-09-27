@@ -32,8 +32,9 @@ function defaults() {
 	ARCH="all"
 	URL="https://github.com/tunapanda"
 	OUTPUT_DIR="$BASE_DIR/Packages"
-	[ -e "$OUTPUT_DIR" ] || mkdir $OUTPUT_DIR
 	[ -e $BASE_DIR/build_settings ] && . $BASE_DIR/build_settings 	
+	[ -d $BASE_DIR/build_settings_local.d ] && . $BASE_DIR/build_settings_local.d/*.conf
+	[ -e "$OUTPUT_DIR" ] || mkdir $OUTPUT_DIR
 }
 
 

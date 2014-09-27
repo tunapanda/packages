@@ -1,6 +1,8 @@
 Examples
 Old
 Packages
+build_settings_local.d/*
+!build_settings_local.d/README.md
 */build_overrides
 */build.out
 *-template-*
